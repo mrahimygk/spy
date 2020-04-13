@@ -1,0 +1,124 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <style> 
+	@font-face {
+	   font-family: vazir;
+	   src: url(vazir.woff);
+	}
+
+	* {
+	   font-family: vazir;
+	}
+    </style>
+</head>
+<body>
+<section class="section" style="padding: 0.5em;">
+    <div class="container">
+        <h1 class="title">
+            بازی جاسوس
+        </h1>
+        <p class="subtitle">
+            پخش کارت 
+        </p>
+    </div>
+</section>
+
+
+<div id="info_div" class="columns is-centered is-hidden">
+  <div class="column is-3">
+    <div class="box has-text-centered">
+      <p>تعداد بازیکنها</p>
+      <p id="palyers_count"></p>
+    </div>
+  </div>
+</div>
+
+<div id="new_game_div" class="columns is-centered">
+  <div class="column is-3">
+    <div class="box has-text-centered is-half">
+      <p><label for="players">تعداد بازیکنها</label></p>
+      <p><input id="player_input" class="input is-primary" type="number" name="players" min="4" value="4" /></p>';
+      <input class="button is-success" type="button" value="بازی جدید" onclick="newGame()"/>
+    </div>
+  </div>
+</div>
+
+<div id="toss_div" class="columns is-centered is-hidden">
+  <div class="column is-3">
+    <div class="box has-text-centered is-half">
+      <p> HERE : CARD TOSSING </p>
+    </div>
+  </div>
+</div
+
+<footer class="footer">
+  <div class="content has-text-right">
+    <p>
+      M.Rahimy <br/> Check <a href="cv.mrahimy.ir">my CV</a>
+      <br/>mail: <a href="mailto:mojtaba.rahimy@chmail.ir">mojtaba.rahimy@chmail.ir</a>
+    </p>
+  </div>
+</footer>
+
+
+<script>
+    function newGame(){
+        var player_count = document.getElementById('player_input').value;
+        if(player_count)
+        var mygetrequest=new ajaxRequest()
+        mygetrequest.onreadystatechange=function(){
+            if (mygetrequest.readyState==4){
+                if (mygetrequest.status==200 || window.location.href.indexOf("http")==-1){
+                    var newGameDiv = document.getElementById("new_game_div");
+		    newGameDiv.classList.add("is-hidden");
+
+                    var infoDiv = document.getElementById("info_div");
+		    infoDiv.classList.remove("is-hidden");
+
+		    var node = document.createTextNode(mygetrequest.responseText);
+		    var p = document.getElementById("palyers_count").appendChild(node);
+		    var btn = document.getElementById("toss_div");
+		    btn.classList.remove("is-hidden");
+                    console.log(mygetrequest.responseText);
+                }else{
+                    alert("An error has occured making the request")
+                }
+            }
+        }
+        var player_count_value=encodeURIComponent(player_count)
+        mygetrequest.open("GET", "http://www.cafe4sq.ir/toss_api.php?player_count="+player_count_value, true)
+        mygetrequest.send(null)
+
+    }
+    
+    function ajaxRequest(){
+     var activexmodes=["Msxml2.XMLHTTP", "Microsoft.XMLHTTP"] //activeX versions to check for in IE
+     if (window.ActiveXObject){ //Test for support for ActiveXObject in IE first (as XMLHttpRequest in IE7 is broken)
+      for (var i=0; i<activexmodes.length; i++){
+       try{
+        return new ActiveXObject(activexmodes[i])
+       }
+       catch(e){
+        //suppress error
+       }
+      }
+     }
+     else if (window.XMLHttpRequest) // if Mozilla, Safari etc
+      return new XMLHttpRequest()
+     else
+      return false
+    }
+
+
+</script>
+
+
+
+</body></html>
