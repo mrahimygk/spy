@@ -19,44 +19,63 @@
     </style>
 </head>
 <body>
-<section class="section" style="padding: 0.5em;">
+<section class="section">
     <div class="container">
-        <h1 class="title">
-            بازی جاسوس
+        <h1 class="title is-2">
+             جاسوس‌یابی
         </h1>
         <p class="subtitle">
-            پخش کارت 
+            برنامه‌ای برای پخش کردن نقش‌ها از طریق اینترنت 
         </p>
     </div>
 </section>
 
+<section class="section" style="padding-top: 0.5em;">
+	<div class="columns">
+	  <div id="new_game_div" class="column is-4">
+	    <div class="box has-text-centered is-half">
+	      <h5 class="title is-5">تعداد بازیکن‌ها</h5>
+	      <p><input id="player_input" class="input is-primary" type="number" name="players" min="4" value="4" /></p>
+	<p>&nbsp;</p>
+	      <input class="button is-success" type="button" value="بازی جدید" onclick="newGame()"/>
+	    </div>
+	  </div>
 
-<div id="info_div" class="columns is-centered is-hidden">
-  <div class="column is-3">
-    <div class="box has-text-centered">
-      <p>تعداد بازیکنها</p>
-      <p id="palyers_count"></p>
-    </div>
-  </div>
-</div>
+	<!-- join game -->
+	  <div id="join_game_div" class="column is-4">
+	    <div class="box has-text-centered is-half">
+	      <h5 class="title is-5">کد بازی برای ملحق شدن:  </h5>
+	      <p><input id="code_input" class="input is-primary" name="game_code"/></p>
+	<p>&nbsp;</p>
+	      <input class="button is-success" type="button" value="بریم" onclick="joinGame()"/>
+	    </div>
+	  </div>
+	</div>
+</section>
 
-<div id="new_game_div" class="columns is-centered">
-  <div class="column is-3">
-    <div class="box has-text-centered is-half">
-      <p><label for="players">تعداد بازیکنها</label></p>
-      <p><input id="player_input" class="input is-primary" type="number" name="players" min="4" value="4" /></p>';
-      <input class="button is-success" type="button" value="بازی جدید" onclick="newGame()"/>
-    </div>
-  </div>
-</div>
+<section id="info_div" class="section is-hidden" style="padding-top: 0.5em;">
+	<div class="columns">
+	  <div class="column is-4">
+	    <div class="box has-text-centered">
+	      <h4 class="title is-4">تعداد بازیکن‌ها</h4>
+	      <p id="palyers_count"></p>
+	      <p>&nbsp;</p>
+	      <h5 class="subtitle is-5">کد بازی برای دوستان:</h5>
+	      <p id="join_game_code">&nbsp;</p>
+	    </div>
+	  </div>
 
-<div id="toss_div" class="columns is-centered is-hidden">
-  <div class="column is-3">
-    <div class="box has-text-centered is-half">
-      <p> HERE : CARD TOSSING </p>
-    </div>
-  </div>
-</div
+          <div class="column is-5"  id="toss_div" class="is-hidden">
+            <div class="box has-text-centered is-half">
+              <h4 id="role_label" class="title is-4"> نقش شما </h4>
+              <p id="role"> شهروند </p>
+	      <p>&nbsp;</p>
+              <p id="password_label" class="subtitle is-5"> کلمهٔ رمز:  </p>
+              <span id="password_text"> آبنما  </span>
+          </div>
+       </div>
+     </div>
+</section>
 
 <footer class="footer">
   <div class="content has-text-right">
@@ -73,28 +92,32 @@
         var player_count = document.getElementById('player_input').value;
         var mygetrequest=new ajaxRequest()
         mygetrequest.onreadystatechange=function(){
-            if (mygetrequest.readyState==4){
-                if (mygetrequest.status==200 || window.location.href.indexOf("http")==-1){
-                    var newGameDiv = document.getElementById("new_game_div");
-		    newGameDiv.classList.add("is-hidden");
-
-                    var infoDiv = document.getElementById("info_div");
-		    infoDiv.classList.remove("is-hidden");
-
-		    var node = document.createTextNode(mygetrequest.responseText);
-		    var p = document.getElementById("palyers_count").appendChild(node);
-		    var btn = document.getElementById("toss_div");
-		    btn.classList.remove("is-hidden");
-                    console.log(mygetrequest.responseText);
-                }else{
-                    alert("An error has occured making the request")
-                }
-            }
+            newGameRequest(mygetrequest, player_count);
         }
         var player_count_value=encodeURIComponent(player_count)
         mygetrequest.open("GET", "http://www.cafe4sq.ir/toss_api.php?player_count="+player_count_value, true)
         mygetrequest.send(null)
 
+    }
+
+    function newGameRequest(mygetrequest, player_count){
+	if (mygetrequest.readyState==4){
+		if (mygetrequest.status==200 || window.location.href.indexOf("http")==-1){
+		    document.getElementById("new_game_div").classList.add("is-hidden");
+		    document.getElementById("join_game_div").classList.add("is-hidden");
+
+		    var infoDiv = document.getElementById("info_div");
+		    infoDiv.classList.remove("is-hidden");
+
+		    var node = document.createTextNode(player_count + ' نفر');
+		    var p = document.getElementById("palyers_count").appendChild(node);
+		    var btn = document.getElementById("toss_div");
+		    btn.classList.remove("is-hidden");
+		    console.log(mygetrequest.responseText);
+		}else{
+		    alert("An error has occured making the request")
+		}
+		}
     }
     
     function ajaxRequest(){
