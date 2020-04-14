@@ -15,14 +15,15 @@ if ($conn->connect_error) {
 
 if(isset($_GET['player_count'])){
     $player_count =  $_GET['player_count'];
-    if($player_count>=4){
+    $easyCode = filter_var($_GET['easy_code'], FILTER_VALIDATE_BOOLEAN);
+    if($player_count>=3){
         $words_string = file_get_contents("words.json");
         $words_json = json_decode($words_string, true);
         $randomIndex = array_rand($words_json);
         $randomWord = $words_json[$randomIndex];
-        $gameCode = gen_uid($l=10);
+        $gameCode = gen_uid(6, $easyCode);
         while(isGameCodeTaken($gameCode, $conn)){
-            $gameCode = gen_uid($l=10);
+            $gameCode = gen_uid(6, $easyCode);
         }
         $sql = "INSERT INTO game (code, nightname, player_count) VALUES ('$gameCode','$randomWord','$player_count');";
 	    runQuery($sql, $conn);
@@ -47,7 +48,7 @@ if(isset($_GET['join_game'])){
     $gameCode = $_GET['join_game'];
     $position = getFreePositionOfGame($gameCode, $conn);
     if($position == false) {
-        echo 'بازی پر شده';
+        echo 'بازی پیدا نشد! شاید هم  پر شده !';
         return;
     }
     takeRole($gameCode, $position, $conn);
@@ -56,8 +57,13 @@ if(isset($_GET['join_game'])){
     echo "||| $playerCount";
 }
 
-function gen_uid($l=10){
-    return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyz"), 0, $l);
+function gen_uid($l, $easyCode){
+    $hash = "123456789";
+    if($easyCode==false) {
+        $hash .="abcdef";
+        $l *= 2;
+    }
+    return substr(str_shuffle($hash), 0, $l);
 }
 
 function isGameCodeTaken($code, $conn){
@@ -106,17 +112,4 @@ function getPlayerCount($gameCode, $conn){
         
     return false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 ?>
