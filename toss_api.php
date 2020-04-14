@@ -28,23 +28,32 @@ if(isset($_GET['player_count'])){
 	    runQuery($sql, $conn);
         $indices = range(1, $player_count);
         shuffle($indices);
-        $sql = "INSERT INTO player (game, position, is_assigned, is_spy) VALUES ('$gameCode',$indices[0],false, true);";
+        $sql = "INSERT INTO player (game, position, is_taken, is_spy) VALUES ('$gameCode',$indices[0],false, true);";
         runQuery($sql , $conn);
         unset($indices[0]);
         foreach($indices as $index){
-            $sql = "INSERT INTO player (game, position, is_assigned, is_spy) VALUES ('$gameCode',$index,false, false);";
+            $sql = "INSERT INTO player (game, position, is_taken, is_spy) VALUES ('$gameCode',$index,false, false);";
             runQuery($sql , $conn);
         }
         
+        takeRole($gameCode, 1, $conn);
         showRole($gameCode, 1, $conn);
+        echo "||| $gameCode";
+        
     }
 }
 
-if(isset($_GET['toss_roles_index'])){
-    $index = $_GET['toss_roles_index'];
-    if(!isset($_SESSION['player_count'])) die();
-    if(!isset($_SESSION['random_word'])) die();
-    echo $_SESSION['role_'.$index];
+if(isset($_GET['join_game'])){
+    $gameCode = $_GET['join_game'];
+    $position = getFreePositionOfGame($gameCode, $conn);
+    if($position == false) {
+        echo 'بازی پر شده';
+        return;
+    }
+    takeRole($gameCode, $position, $conn);
+    showRole($gameCode, $position, $conn);
+    $playerCount = getPlayerCount($gameCode, $conn);
+    echo "||| $playerCount";
 }
 
 function gen_uid($l=10){
@@ -52,8 +61,18 @@ function gen_uid($l=10){
 }
 
 function isGameCodeTaken($code, $conn){
-    if($result = $conn->query("SELECT * FROM game where code=`$code`"))
+    if($result = $conn->query("SELECT code FROM game where code=`$code` LIMIT 1"))
 	        return $result->num_rows >0;
+}
+
+function getFreePositionOfGame($gameCode, $conn){
+    if($result = $conn->query("SELECT player.position FROM player WHERE player.game='$gameCode' AND player.is_taken=false LIMIT 1"))
+        if($result->num_rows >0){
+            $row = $result->fetch_assoc();
+            return $row["position"];
+        } else return false;
+        
+    return false;
 }
 
 function runQuery($sql , $conn){
@@ -73,8 +92,20 @@ function showRole($gameCode, $position, $conn){
         }
 }
 
+function takeRole($gameCode, $position, $conn){
+    $sql = "UPDATE player SET player.is_taken=true WHERE player.game='$gameCode' AND player.position=$position";
+    runQuery($sql, $conn);
+}
 
-
+function getPlayerCount($gameCode, $conn){
+    if($result = $conn->query("SELECT game.player_count FROM game WHERE game.code='$gameCode' LIMIT 1"))
+        if($result->num_rows >0){
+            $row = $result->fetch_assoc();
+            return $row["player_count"];
+        }
+        
+    return false;
+}
 
 
 
