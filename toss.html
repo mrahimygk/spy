@@ -68,10 +68,10 @@
           <div class="column is-5"  id="toss_div" class="is-hidden">
             <div class="box has-text-centered is-half">
               <h4 id="role_label" class="title is-4"> نقش شما </h4>
-              <p id="role"> شهروند </p>
+              <p id="role"></p>
 	      <p>&nbsp;</p>
               <p id="password_label" class="subtitle is-5"> کلمهٔ رمز:  </p>
-              <span id="password_text"> آبنما  </span>
+              <p id="password_text"></p>
           </div>
        </div>
      </div>
@@ -92,7 +92,7 @@
         var player_count = document.getElementById('player_input').value;
         var mygetrequest=new ajaxRequest()
         mygetrequest.onreadystatechange=function(){
-            newGameRequest(mygetrequest, player_count);
+            newGameLogic(mygetrequest, player_count);
         }
         var player_count_value=encodeURIComponent(player_count)
         mygetrequest.open("GET", "http://www.cafe4sq.ir/toss_api.php?player_count="+player_count_value, true)
@@ -100,24 +100,61 @@
 
     }
 
-    function newGameRequest(mygetrequest, player_count){
-	if (mygetrequest.readyState==4){
-		if (mygetrequest.status==200 || window.location.href.indexOf("http")==-1){
-		    document.getElementById("new_game_div").classList.add("is-hidden");
-		    document.getElementById("join_game_div").classList.add("is-hidden");
+    function newGameLogic(mygetrequest, player_count){
+	if (mygetrequest.readyState!=4) return;
+	if (mygetrequest.status!=200 && window.location.href.indexOf("http")!=-1) return;
+	document.getElementById("new_game_div").classList.add("is-hidden");
+	document.getElementById("join_game_div").classList.add("is-hidden");
+	document.getElementById("toss_div").classList.remove("is-hidden");
+	document.getElementById("info_div").classList.remove("is-hidden");
+	document.getElementById("palyers_count").appendChild(document.createTextNode(player_count + ' نفر'));
+	var data = mygetrequest.responseText.split("|||");
+	var nightname = data[0];
+	var gameCode = data[1];
+	if(nightname==='spy'){
+	    document.getElementById("role").appendChild(document.createTextNode('جاسوس'));
+            document.getElementById("password_text").appendChild(document.createTextNode('*****'));
+	} else {
+            document.getElementById("role").appendChild(document.createTextNode('شهروند'));
+	    document.getElementById("password_text").appendChild(document.createTextNode(nightname));
+	}
+	document.getElementById("join_game_code").appendChild(document.createTextNode(gameCode));	
+    }
 
-		    var infoDiv = document.getElementById("info_div");
-		    infoDiv.classList.remove("is-hidden");
+    function joinGame(){
+	var game_code = document.getElementById('code_input').value;
+        var mygetrequest=new ajaxRequest()
+        mygetrequest.onreadystatechange=function(){
+            joinGameLogic(mygetrequest, game_code);
+        }
+        var game_code_value=encodeURIComponent(game_code)
+        mygetrequest.open("GET", "http://www.cafe4sq.ir/toss_api.php?join_game="+game_code_value, true)
+        mygetrequest.send(null)
+    }
 
-		    var node = document.createTextNode(player_count + ' نفر');
-		    var p = document.getElementById("palyers_count").appendChild(node);
-		    var btn = document.getElementById("toss_div");
-		    btn.classList.remove("is-hidden");
-		    console.log(mygetrequest.responseText);
-		}else{
-		    alert("An error has occured making the request")
-		}
-		}
+    function joinGameLogic(mygetrequest, game_code){
+	if (mygetrequest.readyState!=4) return;
+	if (mygetrequest.status!=200 && window.location.href.indexOf("http")!=-1) return;
+	if (!mygetrequest.responseText.includes("|||")) {
+	    alert(mygetrequest.responseText);
+	    return;
+	}
+	document.getElementById("new_game_div").classList.add("is-hidden");
+	document.getElementById("join_game_div").classList.add("is-hidden");
+	document.getElementById("toss_div").classList.remove("is-hidden");
+	document.getElementById("info_div").classList.remove("is-hidden");
+
+	var data = mygetrequest.responseText.split("|||");
+	document.getElementById("palyers_count").appendChild(document.createTextNode(data[1] + ' نفر'));
+	var nightname = data[0];
+	if(nightname==='spy'){
+	    document.getElementById("role").appendChild(document.createTextNode('جاسوس'));
+            document.getElementById("password_text").appendChild(document.createTextNode('*****'));
+	} else {
+            document.getElementById("role").appendChild(document.createTextNode('شهروند'));
+	    document.getElementById("password_text").appendChild(document.createTextNode(nightname));
+	}
+	document.getElementById("join_game_code").appendChild(document.createTextNode(game_code));
     }
     
     function ajaxRequest(){
